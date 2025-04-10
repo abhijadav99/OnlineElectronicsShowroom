@@ -1,0 +1,178 @@
+﻿:root {
+	--primary-color: #7B1E3B; /* Deep cherry */
+	--secondary-color: #FDFDFD; /* Almost white */
+	--accent-color: #FF4C4C; /* Bright red accent */
+	--card-text-color: #1C1C1C; /* Very dark text */
+	--card-bg-color: #FFFFFF; /* White background */
+}
+
+.navbar {
+	background-color: var(--primary-color) !important;
+	padding: 1rem 0;
+}
+
+.navbar-brand {
+	color: var(--secondary-color) !important;
+	font-weight: 600;
+}
+
+.nav-link {
+	color: var(--secondary-color) !important;
+	font-weight: 500;
+	transition: all 0.3s ease;
+}
+
+	.nav-link:hover {
+		color: var(--accent-color) !important;
+	}
+
+.navbar-toggler {
+	border: none;
+}
+
+	.navbar-toggler:focus {
+		box-shadow: none;
+	}
+
+/* Hero Banner */
+.hero-banner {
+	background: url('../Images/electronics-banner.jpg') no-repeat center center/cover;
+	height: 400px;
+	background-color: var(--primary-color);
+}
+
+/* Category Cards */
+.category-card img {
+	height: 250px;
+	object-fit: cover;
+}
+
+.category-card .card-title {
+	font-weight: 600;
+	color: var(--primary-color);
+}
+
+/* Offer Cards */
+.offer-card img {
+	height: 180px;
+	object-fit: cover;
+}
+
+/* Headings */
+h2 {
+	color: var(--primary-color);
+}
+
+.btn-primary {
+	background-color: var(--accent-color) !important;
+	border: none;
+	padding: 0.5rem 1.5rem;
+	color: #fff;
+}
+
+	.btn-primary:hover {
+		background-color: #cc0000;
+	}
+
+.footer {
+	background-color: var(--primary-color);
+	color: var(--secondary-color);
+}
+
+.footer-link {
+	color: var(--secondary-color);
+	text-decoration: none;
+	display: block;
+	margin: 0.4rem 0;
+	transition: color 0.3s ease;
+}
+
+	.footer-link:hover {
+		color: var(--accent-color);
+		text-decoration: underline;
+	}
+
+.social-icon {
+	color: var(--secondary-color);
+	font-size: 1.3rem;
+	transition: color 0.3s ease;
+}
+
+	.social-icon:hover {
+		color: var(--accent-color);
+	}
+
+.hero-section {
+	background: linear-gradient(rgba(123, 30, 59, 0.8), rgba(123, 30, 59, 0.8)), url('../Images/hero-bg.jpg') center/cover;
+	height: 70vh;
+	display: flex;
+	align-items: center;
+	color: white;
+	text-align: center;
+}
+
+.category-card {
+	transition: transform 0.3s;
+	border: none;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+	.category-card:hover {
+		transform: translateY(-5px);
+	}
+
+.nav-tabs .nav-link {
+	color: var(--primary-color) !important;
+	background-color: transparent;
+	border-color: transparent;
+}
+
+	.nav-tabs .nav-item.show .nav-link,
+	.nav-tabs .nav-link.active {
+		color: #fff !important;
+		background-color: var(--primary-color) !important;
+		border-color: var(--primary-color) !important;
+	}
+
+	.nav-tabs .nav-link:hover {
+		border-color: rgba(123, 30, 59, 0.2) !important;
+	}
+
+.text-gradient {
+	background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+.custom-btn {
+	background-color: var(--primary-color);
+	border: none;
+	color: white;
+	border-radius: 50rem;
+	padding: 0.5rem 1.5rem;
+	transition: all 0.3s ease;
+}
+
+	.custom-btn:hover {
+		background-color: var(--accent-color);
+		color: white;
+	}
+
+.product-card {
+	background-color: var(--card-bg-color);
+	color: var(--card-text-color);
+	border-radius: 1.5rem;
+	border: none;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+	overflow: hidden;
+	transition: transform 0.3s ease;
+}
+
+	.product-card:hover {
+		transform: translateY(-5px);
+	}
+
+.category-select {
+	border-radius: 50rem;
+	border: 2px solid var(--primary-color);
+}
