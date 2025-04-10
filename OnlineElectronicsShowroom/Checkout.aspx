@@ -1,56 +1,78 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Checkout.aspx.cs" Inherits="OnlineElectronicsShowroom.Checkout" MasterPageFile="~/Site.Master" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-    <h2 class="mb-4">Checkout</h2>
-    
-    <div class="row g-3">
-        <div class="col-md-6">
-            <h4 class="mb-3">Shipping Information</h4>
-            <div class="form-group mb-2">
-                <asp:TextBox ID="txtFullName" runat="server" placeholder="Full Name" 
-                    CssClass="form-control" Required="true"/>
-            </div>
-            <div class="form-group mb-2">
-                <asp:TextBox ID="txtAddress" runat="server" placeholder="Street Address" 
-                    CssClass="form-control" Required="true" TextMode="MultiLine" Rows="2"/>
-            </div>
-            <div class="row">
-                <div class="col-md-4">
-                    <asp:TextBox ID="txtCity" runat="server" placeholder="City" 
-                        CssClass="form-control" Required="true"/>
-                </div>
-                <div class="col-md-4">
-                    <asp:TextBox ID="txtState" runat="server" placeholder="State" 
-                        CssClass="form-control" Required="true"/>
-                </div>
-                <div class="col-md-4">
-                    <asp:TextBox ID="txtZip" runat="server" placeholder="Zip Code" 
-                        CssClass="form-control" Required="true"/>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-6">
-            <h4>Order Summary</h4>
-            <asp:Repeater ID="rptOrderSummary" runat="server">
-                <ItemTemplate>
-                    <div class="d-flex justify-content-between">
-                        <span><%# Eval("Name") %> x <%# Eval("Quantity") %></span>
-                        <span><%# Convert.ToDecimal(Eval("Price")) * Convert.ToInt32(Eval("Quantity")) %></span>
+    <div class="container py-4">
+        <div class="row g-4">
+            <!-- Shipping Information Card -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm rounded-4">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4 text-primary">Shipping Information</h4>
+
+                        <div class="form-floating mb-3">
+                            <asp:TextBox ID="txtFullName" runat="server" CssClass="form-control" placeholder="Full Name" />
+                            <label for="txtFullName">Full Name</label>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <asp:TextBox ID="txtAddress" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="2" placeholder="Street Address" />
+                            <label for="txtAddress">Street Address</label>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <asp:TextBox ID="txtCity" runat="server" CssClass="form-control" placeholder="City" />
+                                    <label for="txtCity">City</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <asp:TextBox ID="txtState" runat="server" CssClass="form-control" placeholder="State" />
+                                    <label for="txtState">State</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <asp:TextBox ID="txtZip" runat="server" CssClass="form-control" placeholder="Zip Code" />
+                                    <label for="txtZip">Zip Code</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </ItemTemplate>
-            </asp:Repeater>
-            <hr />
-            <div class="d-flex justify-content-between fw-bold">
-                <span>Total:</span>
-                <asp:Literal ID="ltTotal" runat="server"/>
+                </div>
+            </div>
+
+            <!-- Order Summary Card -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm rounded-4">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4 text-primary">Order Summary</h4>
+
+                        <asp:Repeater ID="rptOrderSummary" runat="server">
+                            <ItemTemplate>
+                                <div class="d-flex justify-content-between py-1 border-bottom">
+                                    <span><%# Eval("Name") %> x <%# Eval("Quantity") %></span>
+                                    <span class="text-end">₹ <%# Convert.ToDecimal(Eval("Price")) * Convert.ToInt32(Eval("Quantity")) %></span>
+                                </div>
+                            </ItemTemplate>
+                        </asp:Repeater>
+
+                        <hr class="my-3" />
+                        <div class="d-flex justify-content-between fw-bold fs-5">
+                            <span>Total:</span>
+                            <asp:Literal ID="ltTotal" runat="server" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <div class="mt-4 text-end">
-        <asp:Button ID="btnPlaceOrder" runat="server" Text="Place Order" 
-            CssClass="btn btn-primary btn-lg" OnClick="btnPlaceOrder_Click"/>
+
+        <!-- Place Order Button -->
+        <div class="text-end mt-4">
+            <asp:Button ID="btnPlaceOrder" runat="server" Text="Place Order" 
+                CssClass="btn btn-success btn-lg px-5" OnClick="btnPlaceOrder_Click" />
+        </div>
     </div>
 </asp:Content>
 

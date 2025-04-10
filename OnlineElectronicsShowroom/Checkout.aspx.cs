@@ -21,6 +21,7 @@ namespace OnlineElectronicsShowroom
                     Response.Redirect("~/Login.aspx");
                     return;
                 }
+
                 LoadOrderSummary();
             }
         }
@@ -28,21 +29,24 @@ namespace OnlineElectronicsShowroom
         private void LoadOrderSummary()
         {
             int userId = Convert.ToInt32(Session["UserID"]);
-            DataTable dt = GetCartItems(userId);
-            rptOrderSummary.DataSource = dt;
+            DataTable cartItems = GetCartItems(userId);
+
+            rptOrderSummary.DataSource = cartItems;
             rptOrderSummary.DataBind();
 
-            decimal total = dt.AsEnumerable()
-                .Sum(row => Convert.ToDecimal(row["Price"]) * Convert.ToInt32(row["Quantity"]));
+            decimal total = cartItems.AsEnumerable()
+                .Sum(item => Convert.ToDecimal(item["Price"]) * Convert.ToInt32(item["Quantity"]));
+
             ltTotal.Text = total.ToString("C");
         }
 
         private DataTable GetCartItems(int userId)
         {
-            string query = @"SELECT c.ProductID, p.Name, p.Price, c.Quantity 
-                  FROM Cart c
-                  INNER JOIN Products p ON c.ProductID = p.ProductID
-                  WHERE c.UserID = @UserID"; // Added c.ProductID
+            string query = @"
+        SELECT c.ProductID, p.Name, p.Price, c.Quantity
+        FROM Cart c
+        INNER JOIN Products p ON c.ProductID = p.ProductID
+        WHERE c.UserID = @UserID";
 
             SqlParameter[] parameters = { new SqlParameter("@UserID", userId) };
             return Database.GetDataParameters(query, parameters);
@@ -50,8 +54,17 @@ namespace OnlineElectronicsShowroom
 
         protected void btnPlaceOrder_Click(object sender, EventArgs e)
         {
-            int orderId = 0;
+            int userId = Convert.ToInt32(Session["UserID"]);
+            DataTable cartItems = GetCartItems(userId);
+
+            if (cartItems.Rows.Count == 0)
+            {
+                ltTotal.Text = "<div class='alert alert-warning'>Your cart is empty.</div>";
+                return;
+            }
+
             bool transactionCompleted = false;
+            int orderId = 0;
 
             using (SqlConnection conn = new SqlConnection(Database.connectionString))
             {
@@ -60,28 +73,26 @@ namespace OnlineElectronicsShowroom
                 {
                     try
                     {
-                        int userId = Convert.ToInt32(Session["UserID"]);
-                        DataTable cartItems = GetCartItems(userId);
                         decimal total = cartItems.AsEnumerable()
-                            .Sum(row => Convert.ToDecimal(row["Price"]) * Convert.ToInt32(row["Quantity"]));
+                            .Sum(item => Convert.ToDecimal(item["Price"]) * Convert.ToInt32(item["Quantity"]));
 
-                        // Create Order
+                        // Insert into Orders table
                         orderId = CreateOrder(transaction, userId, total);
 
-                        // Create Order Details
-                        foreach (DataRow row in cartItems.Rows)
+                        // Insert into OrderDetails table
+                        foreach (DataRow item in cartItems.Rows)
                         {
-                            CreateOrderDetail(transaction, orderId,
-                                Convert.ToInt32(row["ProductID"]),
-                                Convert.ToInt32(row["Quantity"]),
-                                Convert.ToDecimal(row["Price"]));
+                            int productId = Convert.ToInt32(item["ProductID"]);
+                            int quantity = Convert.ToInt32(item["Quantity"]);
+                            decimal price = Convert.ToDecimal(item["Price"]);
+
+                            CreateOrderDetail(transaction, orderId, productId, quantity, price);
                         }
 
-                        // Clear Cart
-                        Database.ExecuteQueryTransaction(
-                            "DELETE FROM Cart WHERE UserID = @UserID",
-                            new SqlParameter[] { new SqlParameter("@UserID", userId) },
-                            transaction);
+                        // Clear user's cart
+                        string deleteCartQuery = "DELETE FROM Cart WHERE UserID = @UserID";
+                        SqlParameter[] deleteParams = { new SqlParameter("@UserID", userId) };
+                        Database.ExecuteQueryTransaction(deleteCartQuery, deleteParams, transaction);
 
                         transaction.Commit();
                         transactionCompleted = true;
@@ -90,15 +101,9 @@ namespace OnlineElectronicsShowroom
                     {
                         if (!transactionCompleted)
                         {
-                            try
-                            {
-                                transaction.Rollback();
-                            }
-                            catch (Exception rollbackEx)
-                            {
-                                // Log rollback error if needed
-                            }
+                            try { transaction.Rollback(); } catch { /* Log rollback error if necessary */ }
                         }
+
                         ltTotal.Text = $"<div class='alert alert-danger'>Error: {ex.Message}</div>";
                         return;
                     }
@@ -112,35 +117,42 @@ namespace OnlineElectronicsShowroom
             }
         }
 
+
         private int CreateOrder(SqlTransaction transaction, int userId, decimal total)
         {
-            string query = @"INSERT INTO Orders 
-                    (UserID, TotalAmount, ShippingName, ShippingAddress, 
-                     ShippingCity, ShippingState, ShippingZip)
-                    OUTPUT INSERTED.OrderID
-                    VALUES (@UserID, @Total, @Name, @Address, @City, @State, @Zip)";
+            string query = @"
+        INSERT INTO Orders 
+            (UserID, TotalAmount, ShippingName, ShippingAddress, 
+             ShippingCity, ShippingState, ShippingZip)
+        OUTPUT INSERTED.OrderID
+        VALUES 
+            (@UserID, @Total, @Name, @Address, @City, @State, @Zip)";
 
-            SqlParameter[] parameters = {
+            SqlParameter[] parameters =
+            {
         new SqlParameter("@UserID", userId),
         new SqlParameter("@Total", total),
-        new SqlParameter("@Name", txtFullName.Text),
-        new SqlParameter("@Address", txtAddress.Text),
-        new SqlParameter("@City", txtCity.Text),
-        new SqlParameter("@State", txtState.Text),
-        new SqlParameter("@Zip", txtZip.Text)
+        new SqlParameter("@Name", txtFullName.Text.Trim()),
+        new SqlParameter("@Address", txtAddress.Text.Trim()),
+        new SqlParameter("@City", txtCity.Text.Trim()),
+        new SqlParameter("@State", txtState.Text.Trim()),
+        new SqlParameter("@Zip", txtZip.Text.Trim())
     };
 
             return Convert.ToInt32(Database.ExecuteScalar(query, parameters, transaction));
         }
 
         private void CreateOrderDetail(SqlTransaction transaction, int orderId,
-                                      int productId, int quantity, decimal price)
+                                int productId, int quantity, decimal price)
         {
-            string query = @"INSERT INTO OrderDetails 
-                    (OrderID, ProductID, Quantity, UnitPrice)
-                    VALUES (@OrderID, @ProductID, @Quantity, @Price)";
+            string query = @"
+        INSERT INTO OrderDetails 
+            (OrderID, ProductID, Quantity, UnitPrice)
+        VALUES 
+            (@OrderID, @ProductID, @Quantity, @Price)";
 
-            SqlParameter[] parameters = {
+            SqlParameter[] parameters =
+            {
         new SqlParameter("@OrderID", orderId),
         new SqlParameter("@ProductID", productId),
         new SqlParameter("@Quantity", quantity),
@@ -149,5 +161,6 @@ namespace OnlineElectronicsShowroom
 
             Database.ExecuteQueryTransaction(query, parameters, transaction);
         }
+
     }
 }

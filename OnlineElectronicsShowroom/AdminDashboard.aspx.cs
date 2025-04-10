@@ -31,9 +31,9 @@ namespace OnlineElectronicsShowroom
 
         private void BindData()
         {
-            ProductsBinding();
-            OrdersBinding();
-            UsersBinding();
+            BindingProductItems();
+            BindingOrdersItems();
+            BindingUsersItems();
         }
 
         private bool IsAdmin()
@@ -41,7 +41,7 @@ namespace OnlineElectronicsShowroom
             return Session["UserRole"]?.ToString() == "Admin";
         }
 
-        private void ProductsBinding()
+        private void BindingProductItems()
         {
             const string query = @"
         SELECT p.*, c.CategoryName 
@@ -56,13 +56,13 @@ namespace OnlineElectronicsShowroom
         protected void gridViewProductsRowEditing(object sender, GridViewEditEventArgs e)
         {
             gridViewProducts.EditIndex = e.NewEditIndex;
-            ProductsBinding();
+            BindingProductItems();
         }
 
         protected void gridViewProductsRowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
         {
             gridViewProducts.EditIndex = -1;
-            ProductsBinding();
+            BindingProductItems();
         }
 
         protected void gridViewProductsRowDeleting(object sender, GridViewDeleteEventArgs e)
@@ -78,14 +78,13 @@ namespace OnlineElectronicsShowroom
         };
 
                 Database.ExecuteQueryParameters(query, parameters);
-                ProductsBinding();
+                BindingProductItems();
             }
             catch (Exception ex)
             {
                 ShowError($"Delete failed: {ex.Message}");
             }
         }
-
 
         protected void gridViewProductsRowUpdating(object sender, GridViewUpdateEventArgs e)
         {
@@ -122,7 +121,7 @@ namespace OnlineElectronicsShowroom
 
                 Database.ExecuteQueryParameters(query, parameters);
                 gridViewProducts.EditIndex = -1;
-                ProductsBinding();
+                BindingProductItems();
             }
             catch (Exception ex)
             {
@@ -151,7 +150,7 @@ namespace OnlineElectronicsShowroom
 
                 Database.ExecuteQueryParameters(query, parameters);
                 ClearProductForm();
-                ProductsBinding();
+                BindingProductItems();
             }
             catch (Exception ex)
             {
@@ -168,7 +167,7 @@ namespace OnlineElectronicsShowroom
             ddlCategory.SelectedIndex = 0;
         }
 
-        private void OrdersBinding()
+        private void BindingOrdersItems()
         {
             const string query = @"
         SELECT o.*, u.Username 
@@ -184,13 +183,13 @@ namespace OnlineElectronicsShowroom
         protected void gridViewOrdersRowEditing(object sender, GridViewEditEventArgs e)
         {
             gridViewOrders.EditIndex = e.NewEditIndex;
-            OrdersBinding();
+            BindingOrdersItems();
         }
 
         protected void gridViewOrdersRowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
         {
             gridViewOrders.EditIndex = -1;
-            OrdersBinding();
+            BindingOrdersItems();
         }
 
         protected void gridViewOrdersRowUpdating(object sender, GridViewUpdateEventArgs e)
@@ -213,7 +212,7 @@ namespace OnlineElectronicsShowroom
 
                 Database.ExecuteQueryParameters(query, parameters);
                 gridViewOrders.EditIndex = -1;
-                OrdersBinding();
+                BindingOrdersItems();
             }
             catch (Exception ex)
             {
@@ -231,114 +230,121 @@ namespace OnlineElectronicsShowroom
             );
         }
 
+        private void BindingUsersItems()
+{
+    const string query = "SELECT UserID, Username, Email, Role FROM Users";
 
-        private void UsersBinding()
-        {
-            const string query = "SELECT UserID, Username, Email, Role FROM Users";
-            DataTable dt = Database.GetDataParameters(query, new SqlParameter[0]);
-            gridViewUsers.DataSource = dt;
-            gridViewUsers.DataBind();
-        }
+    DataTable dt = Database.GetDataParameters(query, new SqlParameter[0]);
+    gridViewUsers.DataSource = dt;
+    gridViewUsers.DataBind();
+}
 
-        protected void gridViewUsers_RowEditing(object sender, GridViewEditEventArgs e)
-        {
-            gridViewUsers.EditIndex = e.NewEditIndex;
-            UsersBinding();
-        }
+protected void gridUserViewRowEditing(object sender, GridViewEditEventArgs e)
+{
+    gridViewUsers.EditIndex = e.NewEditIndex;
+    BindingUsersItems();
+}
 
-        protected void gridViewUsers_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
-        {
-            gridViewUsers.EditIndex = -1;
-            UsersBinding();
-        }
+protected void gridUserViewRowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
+{
+    gridViewUsers.EditIndex = -1;
+    BindingUsersItems();
+}
 
-        protected void gridViewUsers_RowUpdating(object sender, GridViewUpdateEventArgs e)
-        {
-            try
-            {
-                int userId = Convert.ToInt32(gridViewUsers.DataKeys[e.RowIndex].Value);
-                GridViewRow row = gridViewUsers.Rows[e.RowIndex];
+protected void gridUserViewRowUpdating(object sender, GridViewUpdateEventArgs e)
+{
+    try
+    {
+        int userId = Convert.ToInt32(gridViewUsers.DataKeys[e.RowIndex].Value);
+        GridViewRow row = gridViewUsers.Rows[e.RowIndex];
 
-                TextBox txtUsername = (TextBox)row.FindControl("txtUsername");
-                TextBox txtEmail = (TextBox)row.FindControl("txtEmail");
-                DropDownList ddlRoles = (DropDownList)row.FindControl("ddlRoles");
+        TextBox txtUsername = (TextBox)row.FindControl("txtUsername");
+        TextBox txtEmail = (TextBox)row.FindControl("txtEmail");
+        DropDownList ddlRoles = (DropDownList)row.FindControl("ddlRoles");
 
-                const string query = @"
+        const string query = @"
             UPDATE Users 
             SET Username = @Username,
                 Email = @Email,
                 Role = @Role
             WHERE UserID = @UserID";
 
-                var parameters = new[]
-                {
+        var parameters = new[]
+        {
             new SqlParameter("@Username", txtUsername.Text),
             new SqlParameter("@Email", txtEmail.Text),
             new SqlParameter("@Role", ddlRoles.SelectedValue),
             new SqlParameter("@UserID", userId)
         };
 
-                Database.ExecuteQueryParameters(query, parameters);
-                gridViewUsers.EditIndex = -1;
-                UsersBinding();
-            }
-            catch (Exception ex)
-            {
-                ShowError($"User update failed: {ex.Message}");
-            }
-        }
+        Database.ExecuteQueryParameters(query, parameters);
+        gridViewUsers.EditIndex = -1;
+        BindingUsersItems();
+    }
+    catch (Exception ex)
+    {
+        ShowError($"User update failed: {ex.Message}");
+    }
+}
 
-        protected void gridViewUsers_RowDeleting(object sender, GridViewDeleteEventArgs e)
+protected void gridUserViewRowDeleting(object sender, GridViewDeleteEventArgs e)
+{
+    try
+    {
+        int userId = Convert.ToInt32(gridViewUsers.DataKeys[e.RowIndex].Value);
+
+        const string query = "DELETE FROM Users WHERE UserID = @UserID";
+
+        var parameters = new[]
         {
-            try
-            {
-                int userId = Convert.ToInt32(gridViewUsers.DataKeys[e.RowIndex].Value);
+            new SqlParameter("@UserID", userId)
+        };
 
-                const string query = "DELETE FROM Users WHERE UserID = @UserID";
-                var parameters = new[] { new SqlParameter("@UserID", userId) };
+        Database.ExecuteQueryParameters(query, parameters);
+        BindingUsersItems();
+    }
+    catch (Exception ex)
+    {
+        ShowError($"Delete failed: {ex.Message}");
+    }
+}
 
-                Database.ExecuteQueryParameters(query, parameters);
-                UsersBinding();
-            }
-            catch (Exception ex)
-            {
-                ShowError($"Delete failed: {ex.Message}");
-            }
-        }
+protected void btnAddUser_Click(object sender, EventArgs e)
+{
+    try
+    {
+        const string query = @"
+            INSERT INTO Users 
+                (Username, Password, Email, Role)
+            VALUES 
+                (@Username, @Password, @Email, @Role)";
 
-        protected void btnAddUser_Click(object sender, EventArgs e)
+        var parameters = new[]
         {
-            try
-            {
-                const string query = @"
-            INSERT INTO Users (Username, Password, Email, Role)
-            VALUES (@Username, @Password, @Email, @Role)";
-
-                var parameters = new[]
-                {
             new SqlParameter("@Username", txtNewUsername.Text.Trim()),
             new SqlParameter("@Password", txtNewPassword.Text), // Plain text as instructed
             new SqlParameter("@Email", txtNewEmail.Text.Trim()),
             new SqlParameter("@Role", ddlNewRole.SelectedValue)
         };
 
-                Database.ExecuteQueryParameters(query, parameters);
-                ClearUserForm();
-                UsersBinding();
-            }
-            catch (Exception ex)
-            {
-                ShowError($"Add user failed: {ex.Message}");
-            }
-        }
+        Database.ExecuteQueryParameters(query, parameters);
+        ClearUserForm();
+        BindingUsersItems();
+    }
+    catch (Exception ex)
+    {
+        ShowError($"Add user failed: {ex.Message}");
+    }
+}
 
-        private void ClearUserForm()
-        {
-            txtNewUsername.Text = string.Empty;
-            txtNewEmail.Text = string.Empty;
-            txtNewPassword.Text = string.Empty;
-            ddlNewRole.SelectedValue = "User"; // Reset to default role
-        }
+private void ClearUserForm()
+{
+    txtNewUsername.Text = string.Empty;
+    txtNewEmail.Text = string.Empty;
+    txtNewPassword.Text = string.Empty;
+    ddlNewRole.SelectedValue = "User"; // Reset to default role
+}
+
 
     }
 }
